@@ -1,0 +1,23 @@
+dist: trusty
+sudo: yes
+language: generic
+
+script:
+  # exit on fail
+  - set -eo pipefail
+  # install lxc
+  - sudo add-apt-repository --yes ppa:ubuntu-lxc/stable
+  - sudo apt-get -qq update
+  - sudo apt-get install --yes lxc
+  # create container
+  - sudo lxc-create -t alpine -n alpine
+  # mount current directory to /travis
+  - echo "lxc.mount.entry = $PWD travis none bind,create=dir 0 0" | sudo tee --append /var/lib/lxc/alpine/config
+  # start
+  - sudo lxc-start -dn alpine
+  - sudo lxc-wait -n alpine -s RUNNING
+  # check mounted directory
+  - sudo lxc-attach -n alpine -- ls -al /travis
+  # try network inside container
+  - sleep 5
+  - sudo lxc-attach -n alpine -- ping github.com -c 2
