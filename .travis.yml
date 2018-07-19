@@ -1,23 +1,16 @@
 dist: trusty
 sudo: yes
-language: generic
+language: minimal
+
+env:
+  global:
+    - LXC_DIST=alpine
+    - LXC_RELEASE=edge
+
+before_install:
+  - sh lxc.sh
+  - run() { sudo lxc-attach -n travis -- $@ ; }
 
 script:
-  # exit on fail
   - set -eo pipefail
-  # install lxc
-  - sudo add-apt-repository --yes ppa:ubuntu-lxc/stable
-  - sudo apt-get -qq update
-  - sudo apt-get install --yes lxc
-  # create container
-  - sudo lxc-create -t alpine -n alpine
-  # mount current directory to /travis
-  - echo "lxc.mount.entry = $PWD travis none bind,create=dir 0 0" | sudo tee --append /var/lib/lxc/alpine/config
-  # start
-  - sudo lxc-start -dn alpine
-  - sudo lxc-wait -n alpine -s RUNNING
-  # check mounted directory
-  - sudo lxc-attach -n alpine -- ls -al /travis
-  # try network inside container
-  - sleep 5
-  - sudo lxc-attach -n alpine -- ping github.com -c 2
+  - run ping github.com -c 2
