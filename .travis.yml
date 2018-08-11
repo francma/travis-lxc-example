@@ -9,8 +9,9 @@ env:
 
 before_install:
   - sh lxc.sh
-  - run() { sudo lxc-attach -n travis -- $@ ; }
+  - shopt -s expand_aliases && alias run='sudo lxc-attach -n travis -- '
 
 script:
   - set -eo pipefail
   - run ping github.com -c 2
+  - run true && echo "a"
